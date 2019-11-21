@@ -1,0 +1,62 @@
+﻿@using TradeHelper.Models
+
+    <div class="container text-secondary p-3" style="background-color: #eff5f5">
+        <form>
+            <div class="form-row">
+                <div class="form-group col-md-2">
+                    <label for="inputType">Typ av transaktion</label>
+                    <select id="inputType" class="form-control" @bind="TypeInput">
+                        <option value="@TransactionType.None" selected>Välj...</option>
+                        <option value="@TransactionType.Deposit">Insättning</option>
+                        <option value="@TransactionType.Buy">Köp</option>
+                        <option value="@TransactionType.Sell">Sälj</option>
+                        <option value="@TransactionType.Dividend">Utdelning</option>
+                        <option value="@TransactionType.Withdraw">Uttag</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="inputDate">Datum</label>
+                    <input id="inputDate" type="datetime" class="form-control" @bind="DateInput" />
+                </div>
+                <div class="form-group col-md-1">
+                    <label for="inputAmount">Belopp</label>
+                    <input id="inputAmount" type="number" class="form-control" @bind="AmountInput" />
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputStock">Aktie</label>
+                    <select id="inputStock" class="form-control" @bind="StockIdInput">
+                        <option value="0" selected>Välj...</option>
+
+                        @foreach (var stock in StockList)
+                        {                            
+                            <option value="@stock.Id">@stock.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group col-md-1">
+                    <label for="inputStockCount">Antal</label>
+                    <input id="inputStockCount" type="number" class="form-control" @bind="StockCountInput" />
+                </div>
+                <div class="col-1">
+                    <div class="mb-2"><br /></div>
+                    <button class="btn btn-info" type="reset" style="vertical-align: bottom" @onclick="OnSave">
+                        Spara
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+   
+
+@code {
+
+    [Parameter] public List<Stock> StockList { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    public TransactionType TypeInput { get; private set; }
+    public DateTime DateInput { get; private set; } = DateTime.Today;
+    public decimal AmountInput { get; private set; }
+    public int StockIdInput { get; private set; }
+    public int StockCountInput { get; private set; }
+}

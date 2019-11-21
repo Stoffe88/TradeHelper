@@ -1,0 +1,92 @@
+﻿@page "/transactions"
+
+@using TradeHelper.Models
+@using TradeHelper.Database
+@using TradeHelper.Components
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="text-info m-3">@header</h1>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <TransactionCreator StockList="StockList" OnSave="AddTransaction" @ref="transactionCreator" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <TransactionListView TransactionList="TransactionList" />
+        </div>
+    </div>
+    
+</div>
+
+@code {
+
+    int numberOfTransactionsToShow = 10;
+    string header = "Transaktioner";
+    TransactionCreator transactionCreator;
+
+    private List<Stock> StockList
+    {
+        get
+        {
+            using (TradeHelperContext context = new TradeHelperContext())
+            {
+                return context.StockRegistry();
+            }
+        }
+    }
+
+    private List<Transaction> TransactionList
+    {
+        get
+        {
+            using (TradeHelperContext context = new TradeHelperContext())
+            {
+                return context.LatestTransactions(numberOfTransactionsToShow);
+            }
+        }
+    }
+
+    private void AddTransaction()
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            var stock = context.FindStock(transactionCreator.StockIdInput);
+
+            switch (transactionCreator.TypeInput)
+            {
+                case TransactionType.Buy:
+                    stock.Buy(transactionCreator.DateInput, 
+                        transactionCreator.StockCountInput, 
+                        transactionCreator.AmountInput);
+                    break;
+
+                case TransactionType.Sell:
+                    stock.Sell(transactionCreator.DateInput, 
+                        transactionCreator.StockCountInput, 
+                        transactionCreator.AmountInput);
+                    break;
+
+                case TransactionType.Dividend:
+                    break;
+
+                default:
+                    context.AddTransaction(
+                        transactionCreator.TypeInput, 
+                        transactionCreator.DateInput, 
+                        transactionCreator.AmountInput);
+                
+                    break;
+            }           
+
+            context.SaveChanges();
+        }
+    }
+}
+

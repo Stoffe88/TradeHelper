@@ -1,0 +1,25 @@
+﻿
+
+<div class="card">
+    <h5 class="card-header text-light" style="background-color: darkslategray">@CardHeader</h5>
+    <div class="card-body">
+        <h4 class="card-title">@CardContent</h4>
+    </div>
+    <div class="card-footer">
+        <div class="small">
+            @(DateTime.Today.Year - 1): @PreviousYearContent<br />
+            @(DateTime.Today.Year - 2): @SecondPreviousYearContent<br />
+            @(DateTime.Today.Year - 3): @ThirdPreviousYearContent
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string CardHeader { get; set; }
+    [Parameter] public string CardContent { get; set; }
+    [Parameter] public string PreviousYearContent { get; set; }
+    [Parameter] public string SecondPreviousYearContent { get; set; }
+    [Parameter] public string ThirdPreviousYearContent { get; set; }
+
+}

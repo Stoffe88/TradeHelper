@@ -1,0 +1,178 @@
+﻿@using TradeHelper.Models
+
+    <div class="container text-secondary">
+        <div class="row text-secondary">
+            <p>Kurserna uppdaterades för <b>@DaysSinceUpdate</b> dagar sedan.</p>
+        </div>
+        <div class="row text-secondary small">
+            *Vinst avser den realiserade vinst som uppstått i samband med försäljning eller utdelning. 
+        </div>
+        <div class="row text-light py-3" style="background-color: darkslategray">
+            <div class="col-1" />
+
+            <div class="col-3">
+                <b>@ListHeaders[0]</b>
+            </div>
+            <div class="col-2 text-center">
+                <b>@ListHeaders[1]</b>
+                @{
+                    bool? editValues = StockList.FirstOrDefault()?.ValueIsEdited;
+
+                    if (editValues == false)
+                    {
+                        <a class="text-light ml-1" href="stock" style="text-decoration: none" @onclick="OnValueEdit">
+                            <i class="fas fa-pencil-alt" />
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="text-light ml-1" href="stock" style="text-decoration: none" @onclick="(() => OnSaveValues.InvokeAsync(StockList))">
+                            <i class="fas fa-save" />
+                        </a>
+                    }
+                }
+            </div>
+            <div class="col-1 text-center">
+                <b>@ListHeaders[2]</b>
+            </div>
+            <div class="col-2 text-center">
+                <b>@ListHeaders[3]</b>
+            </div>
+            <div class="col-2 text-center">
+                <b>@ListHeaders[4]</b>
+            </div>
+        </div>
+
+        @{
+            int rowCounter = 1;
+            string bgColor = "#ffffff";
+
+            foreach (var stock in StockList)
+            {
+                <div class="row py-2" style="background-color: @bgColor">
+                    <div class="col-1 text-center">
+                        
+                        <a class="text-info" href="stock" @onclick="(() => OnDelete.InvokeAsync(stock))">
+                            <i class="far fa-trash-alt m-1" />
+                        </a>
+                        
+
+                    </div>
+                    <div class="col-3">
+                        @if (stock.NameIsEdited)
+                        {
+                            <div class="input-group">
+                                <div class="input-group-prepend mr-2">
+                                    <a class="text-info" href="stock" @onclick="(() => OnSaveName.InvokeAsync(stock))">
+                                        <i class="fas fa-save" />
+                                    </a>
+                                </div>
+                                
+                                <input type="text" class="form-control" style="width: 85%" @bind="stock.Name" />
+                            </div>                            
+                        }
+                        else
+                        {
+                            <div class="input-group">
+                                <div class="input-group-prepend mr-2">
+                                    <a class="text-info" href="stock" style="text-decoration: none" @onclick="(() => OnNameEdit.InvokeAsync(stock))">
+                                        <i class="fas fa-pencil-alt" />
+                                    </a>
+                                </div>
+                                
+                                @stock.Name
+                            </div>
+                            
+                        }
+
+                    </div>
+                    <div class="col-2 text-center">
+                        @if (stock.ValueIsEdited)
+                        {
+                            <input type="number" class="form-control" @bind="stock.Value"/>
+                        }
+                        else
+                        {
+                            @string.Format("{0:c}", stock.Value)
+                        }
+
+                    </div>
+                    <div class="col-1 text-center">
+                        @stock.Count st
+                    </div>
+                    <div class="col-2 text-center">
+                        @string.Format("{0:c}", stock.Cost)
+                    </div>
+                    @{
+                        string textColor1 = stock.Profit > 0 ? "text-info" : "text-danger";
+                        <div class="col-2 @textColor1 text-center">
+                            @string.Format("{0:c}", stock.Profit)
+                        </div>
+                    }
+                </div>
+
+                rowCounter++;
+                bgColor = rowCounter % 2 == 0 ? "#eff5f5" : "#ffffff";
+            }
+
+            <div class="row py-2" style="background-color: @bgColor">
+                <div class="col-1" />
+                <div class="col-3">
+                    Övriga
+                </div>
+                <div class="col-2 text-center">
+                    ---
+                </div>
+                <div class="col-1 text-center">
+                    ---
+                </div>
+                <div class="col-2 text-center">
+                    ---
+                </div>
+                @{
+                    decimal? profit = RemovedStocks?.Select(stock => stock.Profit).Sum();
+                    string textColor2 = profit > 0 ? "text-info" : "text-danger";
+
+                    <div class="col-2 @textColor2 text-center">
+                        @string.Format("{0:c}", profit)
+                    </div>
+                }
+
+            </div>
+        }
+        
+    </div>
+
+@code {
+
+    [Parameter] public List<Stock> StockList { get; set; }
+    [Parameter] public List<Stock> RemovedStocks { get; set; }
+    [Parameter] public EventCallback<Stock> OnDelete { get; set; }
+    [Parameter] public EventCallback<Stock> OnNameEdit { get; set; }
+    [Parameter] public EventCallback OnValueEdit { get; set; }
+    [Parameter] public EventCallback<Stock> OnSaveName { get; set; }
+    [Parameter] public EventCallback<List<Stock>> OnSaveValues { get; set; }
+
+    private int DaysSinceUpdate
+    {
+        get
+        {
+            DateTime? LatestUpdate = StockList
+                .Select(stock => stock.ValueUpdated)
+                .OrderByDescending(date => date)
+                .FirstOrDefault();
+
+
+            TimeSpan timeDifference = (TimeSpan)(DateTime.Today - LatestUpdate);
+
+
+            return timeDifference.Days;
+        }
+    }
+
+    private static string[] ListHeaders { get; } = new string[] { "Aktie",
+                                                                "Kurs",
+                                                                "Innehav",
+                                                                "Inköpskurs",
+                                                                "Vinst*" };
+}

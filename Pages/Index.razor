@@ -1,0 +1,49 @@
+﻿@page "/"
+@using TradeHelper.Database
+@using TradeHelper.Models
+@using TradeHelper.Components
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="text-info m-3">@header</h1>
+        </div>
+    </div>
+    <div class="container p-3 text-secondary" style="background-color: #eff5f5">
+        <div class="row">
+            <div class="col">
+                <h3>@DateTime.Today.Year</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <Card
+                    CardHeader="Ingående värde"
+                    CardContent="@NominalValue.ToString()"
+                    PreviousYearContent="3000 kr"
+                    SecondPreviousYearContent="1000 kr"
+                    ThirdPreviousYearContent="300 kr" />
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@code{
+
+    private string header = "Välkommen!";
+
+    private decimal NominalValue
+    {
+        get
+        {
+            using(var context = new TradeHelperContext())
+            {
+                return context.Transactions
+                    .Where(transaction => transaction.Type == TransactionType.Deposit || transaction.Type == TransactionType.Withdraw)
+                    .Select(transaction => transaction.Amount)
+                    .Sum();
+            }
+        }
+    }
+}

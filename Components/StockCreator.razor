@@ -1,0 +1,25 @@
+﻿
+@using TradeHelper.Database
+@using TradeHelper.Models
+
+    <div class="container">
+
+        <div class="row p-3" style="background-color: #eff5f5">
+            <form class="form-inline col-md-5">
+                <input type="text" class="form-control" placeholder="@fieldPlaceholder" @bind="stockName" />
+                <button type="reset" class="btn btn-info mx-3" @onclick="(() => OnClick.InvokeAsync(stockName))">@btnText</button>
+            </form>
+        </div>
+
+    </div>
+    
+
+@code {
+
+    string fieldPlaceholder = "Namn";
+    string btnText = "Lägg till";
+
+    private string stockName;
+
+    [Parameter] public EventCallback<string> OnClick { get; set; }
+}

@@ -1,0 +1,73 @@
+﻿
+@using TradeHelper.Models
+
+    <div class="container my-3">
+        <div class="row text-light py-3" style="background-color: darkslategray">
+            <div class="col-2">
+                <b>@ListHeaders[0]</b>
+            </div>
+            <div class="col-2">
+                <b>@ListHeaders[1]</b>
+            </div>
+            <div class="col-2">
+                <b>@ListHeaders[2]</b>
+            </div>
+            <div class="col-4">
+                <b>@ListHeaders[3]</b>
+            </div>
+            <div class="col-2 text-center">
+                <b>@ListHeaders[4]</b>
+            </div>
+        </div>
+        @{
+            int rowCounter = 1;
+            string bgColor;
+
+            foreach (var transaction in TransactionList)
+            {
+                bgColor = rowCounter % 2 == 0 ? "#eff5f5" : "#ffffff";
+                
+                <div class="row text-secondary py-2" style="background-color: @bgColor">
+                    <div class="col-2">
+                        @string.Format("{0:d}", transaction.Date)
+                    </div>
+                    <div class="col-2">
+                        @if (transaction.Type == TransactionType.Buy)@TransactionTypes[0]
+                        else if (transaction.Type == TransactionType.Deposit) @TransactionTypes[1]
+                        else if (transaction.Type == TransactionType.Dividend) @TransactionTypes[2]
+                        else if (transaction.Type == TransactionType.Sell) @TransactionTypes[3]
+                        else if (transaction.Type == TransactionType.Withdraw) @TransactionTypes[4]
+                        else @TransactionTypes[5]
+                    </div>
+                    <div class="col-2">
+                        @string.Format("{0:c}", transaction.Amount)
+                    </div>
+                    @{
+                        StockTransaction stockTransaction = null;
+
+                        @if (transaction is StockTransaction)
+                        {
+                            stockTransaction = (StockTransaction)transaction;
+                        }
+                        <div class="col-4">
+                            @stockTransaction?.Stock.Name
+                        </div>
+                        <div class="col-2 text-center">
+                            @stockTransaction?.StockCount
+                        </div>
+                    }
+                </div>
+
+                rowCounter++;
+            }
+        }
+    </div>
+
+@code {
+
+    [Parameter] public List<Transaction> TransactionList { get; set; }
+
+    private static string[] ListHeaders { get; } = new string[] { "Datum", "Typ", "Summa (SEK)", "Aktie", "Antal aktier" };
+    private double ColSpan { get; } = Math.Round(12.0 / ListHeaders.Length, 0);
+    private static string[] TransactionTypes { get; } = new string[] { "Köp", "Insättning", "Utdelning", "Sälj", "Uttag", "" };
+}

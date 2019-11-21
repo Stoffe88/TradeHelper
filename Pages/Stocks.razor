@@ -1,0 +1,155 @@
+﻿@page "/stock"
+@using TradeHelper.Models
+@using TradeHelper.Database
+@using TradeHelper.Components
+
+    <div class="container">
+        <div class="row">
+            <div class="col-2">
+                <h1 class="text-info m-3">@pageHeader</h1>
+            </div>
+        </div>
+
+        @if (alert.IsSuccess != null)
+        {
+            <div class="alert @alert.AlertFormat" role="alert">@alert.AlertText</div>
+        }
+
+        <div class="row mb-3">
+            <StockCreator OnClick="AddStock" />
+        </div>
+
+        <div class="row">
+            <StockListView 
+                StockList="StockList" 
+                RemovedStocks="RemovedStocks"
+                OnNameEdit="EditName"
+                OnSaveName="SaveName"
+                OnValueEdit="EditValues"
+                OnSaveValues="SaveValues"
+                OnDelete="RemoveStock" />
+        </div>     
+        
+    </div>
+
+@code 
+{
+    string pageHeader = "Aktier";
+    private AlertFactory alert = new AlertFactory();
+    private int editRow;
+
+    private List<Stock> StockList
+    {
+        get
+        {
+            using (TradeHelperContext context = new TradeHelperContext())
+            {
+                return context.StockRegistry();
+            }
+        }
+    }
+
+    private List<Stock> RemovedStocks
+    {
+        get
+        {
+            using (TradeHelperContext context = new TradeHelperContext())
+            {
+                return context.RemovedStocks();
+            }
+        }
+    }
+
+    private void AddStock(string stockName)
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            if (string.IsNullOrWhiteSpace(stockName))
+            {
+                alert.IsSuccess = false;
+                alert.AlertText = "Aktien måste ha ett namn";
+            }
+            else
+            {
+                alert.IsSuccess = context.AddStock(stockName);
+
+                if (alert.IsSuccess == true)
+                {
+                    alert.AlertText = $"Aktie {stockName} har lagts till";
+                    context.SaveChanges();
+                }
+                else
+                {
+                    alert.AlertText = $"Aktie {stockName} finns redan";
+                }
+            }
+        }
+    }
+
+    private void RemoveStock(Stock stock)
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            context.FindStock(stock.Name).Remove();
+            context.SaveChanges();
+        }
+    }
+
+    private void EditName(Stock stock)
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            context.FindStock(stock.Name).NameIsEdited = true;
+            context.SaveChanges();
+        }
+    }
+
+    private void EditValues()
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            foreach(var stock in context.Stocks)
+            {
+                if (!stock.IsRemoved)
+                {
+                    stock.ValueIsEdited = true;
+                }
+            }
+
+            context.SaveChanges();
+        }
+    }
+
+    private void SaveValues(List<Stock> stocks)
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            foreach (var stock in stocks)
+            {
+                var masterStock = context.FindStock(stock.Name);
+
+                masterStock.ValueIsEdited = false;
+
+                if(masterStock.Value != stock.Value)
+                {
+                    masterStock.Value = stock.Value;
+                    masterStock.ValueUpdated = DateTime.Today;
+                }                
+            }
+
+            context.SaveChanges();
+        }
+    }
+
+    private void SaveName(Stock stock)
+    {
+        using (TradeHelperContext context = new TradeHelperContext())
+        {
+            var masterStock = context.FindStock(stock.Name);
+
+            masterStock.NameIsEdited = false;
+            masterStock.Name = stock.Name;
+            context.SaveChanges();
+        }
+    }
+}

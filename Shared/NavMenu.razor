@@ -1,0 +1,62 @@
+﻿
+<nav class="navbar navbar-expand-md navbar-dark" style="background-color: darkslategray">
+    <a class="navbar-brand p-2" href="#">
+        <i class="fas fa-chart-line" />
+        TradeHelper
+    </a>
+
+    <ul class="navbar-nav">
+        <li class="nav-item pl-3">
+            <a class="nav-link @stockFormat" href="stock" @onclick="ActivateStock">Aktier</a>
+        </li>
+        <li class="nav-item pl-2">
+            <a class="nav-link @transactionFormat" href="transactions" @onclick="ActivateTransaction">Transaktioner</a>
+        </li>
+        <li class="nav-item pl-2">
+            <a class="nav-link @closeFormat" href="#" @onclick="ActivateClose">Dagsavslut</a>
+        </li>
+        <li class="nav-item pl-2">
+            <a class="nav-link @signalFormat" href="#" @onclick="ActivateSignal">Signaler</a>
+        </li>
+    </ul>
+</nav>
+
+@code {
+
+    string stockFormat;
+    string transactionFormat;
+    string closeFormat;
+    string signalFormat;
+
+    private void ActivateStock()
+    {
+        DeactivateEverything();
+        stockFormat = "active";
+    }
+
+    private void ActivateTransaction()
+    {
+        DeactivateEverything();
+        transactionFormat = "active";
+    }
+
+    private void ActivateClose()
+    {
+        DeactivateEverything();
+        closeFormat = "active";
+    }
+
+    private void ActivateSignal()
+    {
+        DeactivateEverything();
+        signalFormat = "active";
+    }
+
+    private void DeactivateEverything()
+    {
+        stockFormat = null;
+        transactionFormat = null;
+        closeFormat = null;
+        signalFormat= null;
+    }
+}
